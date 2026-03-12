@@ -14,7 +14,7 @@ writeBasicScript () {
   done < package.json
 }
 
-lineTowrite () {
+lineToWrite () {
   if [ -f "package.json" ]; then
     writeBasicScript "\\    \"dev\": \"node --watch index.js\""
     writeBasicScript "\\    \"db:seed\": \"node app/migration/seed.js\""
@@ -25,6 +25,25 @@ lineTowrite () {
   fi
 }
 
+writeIndex () {
+  cat > index.js << EOF
+  import "dotenv/config";
+  import express from "express";
+  import cors from "cors";
+  import { xss } from "express-xss-sanitizer";
+
+
+  const app = express();
+  //app.use(cors())
+  //app.use(xss())
+  //app.use(express.json());
+
+  app.listen(3000, () => {
+    console.log(\`🚀 Server running at http://localhost:3000\`);
+  });
+EOF
+}
+
 expressProject () {
   echo -n "Nom du projet : "
   read nameProject
@@ -33,6 +52,7 @@ expressProject () {
     mkdir $nameProject && cd $nameProject
     mkdir app
     touch .env .gitignore index.js
+    writeIndex
     cd app
     mkdir config controllers middlewares migration models public routers view
     cd ..
@@ -49,7 +69,7 @@ expressProject () {
     ####### bdd
     echo "=== Install package for bdd ==="
     $bddPackage
-    lineTowrite
+    lineToWrite
   fi
 }
 
@@ -64,6 +84,7 @@ expressProjectVite () {
     cd api
     mkdir config controllers middlewares migration models public routers view
     touch .env .gitignore index.js
+    writeIndex
 
     echo "=== Install base package ==="
     npm init
@@ -77,7 +98,7 @@ expressProjectVite () {
     # bdd
     echo "=== Install package for bdd ==="
     $bddPackage
-    lineTowrite
+    lineToWrite
 
     cd ..
     echo "=== Create client side (front)==="
